@@ -48,7 +48,7 @@ client.on("message", async message => {
         message.channel.send(embed);
     }
 
-    if (command === `${prefix}join`) {
+/*    if (command === `${prefix}join`) {
         if (message.member.voiceChannel) {
             message.member.voiceChannel.join().then(connection => {
                 message.reply(`I have joined ${message.member.voiceChannel}! What now?`);
@@ -58,7 +58,7 @@ client.on("message", async message => {
         } else {
             message.reply(`you need to join a voice channel first!`);
         }
-    }
+    }*/
 
 /*    if (command === `${prefix}play`) {
          if (message.member.voiceChannel) {
