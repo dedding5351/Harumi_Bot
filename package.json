@@ -9,6 +9,7 @@
   "author": "Dennis Eddington",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^11.2.1"
+    "discord.js": "^11.2.1",
+    "firebase": "^4.4.0"
   }
 }

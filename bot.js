@@ -1,6 +1,7 @@
 const botSettings = require("./botsettings.json");
 // ./ Requires file to be on file system
 const Discord = require("discord.js");
+const Firebase = require("firebase");
 //const Music = require("discord.js-music");
 const prefix = botSettings.prefix;
 
@@ -8,6 +9,18 @@ const prefix = botSettings.prefix;
 //Creating a ready event
 const client = new Discord.Client();
 //Music(client);
+// Initialize default app
+// Retrieve your own options values by adding a web app on
+// https://console.firebase.google.com
+Firebase.initializeApp({
+  apiKey: "AIzaSyCsKtXg4yM-ADai9t4jHCcIdLowFaMnoJE",                             // Auth / General Use
+  authDomain: "eve-challenger.firebaseapp.com",         // Auth with popup/redirect
+  databaseURL: "https://eve-challenger.firebaseio.com", // Realtime Database
+  storageBucket: "eve-challenger.appspot.com",          // Storage
+  messagingSenderId: "430517639152"                  // Cloud Messaging
+});
+
+var database = Firebase.database();
 
 // => short way of writing function(args)
 client.on("ready", () => {
@@ -20,6 +33,13 @@ client.on("message", async message => {
         return;
     }
 
+
+  /*  let author = message.author.username;
+    console.log(author);
+
+    defaultDatabase.ref("/chatLog").set({
+        author : message.content
+    });*/
 
     if (message.channel.type === "dm") { // === is strict equals NO TYPE CONVERSION
         return message.channel.send("Don't DM me! \n" + "   - <3 Harumi");
@@ -46,6 +66,129 @@ client.on("message", async message => {
             .addField("True ID", message.author.id);
 
         message.channel.send(embed);
+    }
+
+    if (command === `${prefix}addChallenge`) {// Change later
+        console.log("Add Challenge Running")
+
+        let challengeRef = database.ref("/Challenges")
+
+        challengeRef.once("value").then(snapshot => {
+            //console.log(snapshot.toJSON())
+            let storage = snapshot.toJSON()
+            var index = []
+            for (var x in storage) {
+                index.push(x)
+            }
+            for (var i = 0; i < index.length; i++) {
+                if (storage[index[i]].Challenge == args[0]) {
+                    message.reply("that's already in the Challenge set! Try something else!")
+                    return;
+                }
+            }
+            let keyString = "Challenge"
+            let challengeRef = database.ref("/Challenges").push()
+            challengeRef.set({
+                [keyString] : args[0]
+            })
+            message.reply(`okay I've added ${args[0]} to the challenge set!`)
+
+        })
+
+       /* database.ref("/Challenges").once("value").then(snapshot => {
+            let keyString = "Challenge"
+            let challengeRef = database.ref("/Challenges").push()
+            challengeRef.set({
+                [keyString] : args[0]
+            })
+            //console.log("Logged" + ": " + keyString)
+        });
+
+        challengeRef.once("value").then(snapshot => {
+            //console.log(snapshot.toJSON())
+            let storage = snapshot.toJSON()
+            var index = []
+            for (var x in storage) {
+               */ //index.push(x)
+            //}
+            //console.log(storage[index[0]].Challenge)
+            //console.log(obj[index[1]].Challenge) PERFECT
+    }
+
+
+
+        //let keyString = `Challenge ${challengeRef.numChildren()}`;
+        /*challengeRef.set({
+            [keyString] : "SET"
+        });*/
+
+    if (command === `${prefix}showChallenges`) {
+        console.log("Show Challenges Running")
+
+        let challengeRef = database.ref("/Challenges")
+
+        database.ref("/Challenges").once("value").then(snapshot => {
+            if (snapshot.numChildren() > 0) {
+                let stringBuild = ""
+                challengeRef.once("value").then(snapshot => {
+                    //console.log(snapshot.toJSON())
+                    let storage = snapshot.toJSON()
+                    var index = []
+                    for (var x in storage) {
+                        index.push(x)
+                    }
+
+                    let embed = new Discord.RichEmbed().setColor("#FFC0CB").setDescription("Current Challenge List:")
+
+                    for (var i = 0; i < index.length; i++) {
+                        let challengeIndentifier = "Challenge #" + (i + 1)
+                        embed.addField(challengeIndentifier, storage[index[i]].Challenge)
+                    }
+
+                    message.reply("alright! Here is a list of the current challenges, did I miss any?")
+                    message.channel.send(embed);
+                })
+
+
+            } else {
+                message.reply("there aren't any at the moment! How about you add some?")
+            }
+
+        })
+
+
+    }
+
+    if (command === `${prefix}removeChallenge`) {
+        console.log("Remove Challenge Running")
+
+        let challengeRef = database.ref("/Challenges")
+
+        challengeRef.once("value").then(snapshot => {
+            //console.log(snapshot.toJSON())
+            let storage = snapshot.toJSON()
+            var index = []
+            for (var x in storage) {
+                index.push(x)
+            }
+            for (var i = 0; i < index.length; i++) {
+                if (storage[index[i]].Challenge == args[0]) {
+                    message.reply(`alright, I have removed "${args[0]}" from the Challenge set!`)
+                    challengeRef.child(index[i]).remove()
+                    return;
+                }
+
+            }
+
+            message.reply(`I couldn't find "${args[0]}" in the Challenge set.`)
+            return;
+
+        })
+
+
+
+
+
     }
 
 /*    if (command === `${prefix}join`) {
@@ -84,3 +227,17 @@ client.on("message", async message => {
 
 
 client.login(botSettings.token)
+
+
+
+
+
+
+
+
+
+// defaultDatabase.ref().set({
+//     username: "Hello",
+//     email: "No",
+//     profile_picture : "Isee"
+//   });
