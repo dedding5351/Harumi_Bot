@@ -20,7 +20,12 @@ Firebase.initializeApp({
   messagingSenderId: "430517639152"                  // Cloud Messaging
 });
 
+//Settings States && Logic
 var database = Firebase.database();
+let challenging = false
+let challenger = "";
+let ongoing = false;
+let postChallenge = false;
 
 // => short way of writing function(args)
 client.on("ready", () => {
@@ -47,12 +52,79 @@ client.on("message",  message => {
 
     let messageArray = message.content.split(" "); // let is variable declaration
     let command = messageArray[0];
+    //console.log(command)
     let args = messageArray.slice(1); // Array of elements when cutting out one
     /*
     console.log(messageArray);
     console.log(command);
     console.log(args);
     */
+
+    console.log(message.content)
+
+    if (command === "Y" && challenging === true && message.author.username === challenger && ongoing === false) {
+        //console.log("Y")
+        message.reply("okay you have 25 minutes..... Go!")
+        ongoing = true;
+        setTimeout( () => {
+            message.reply("time is up! Did you finish? (Y/N)")
+            postChallenge = true;
+
+
+
+        }, 5000/*60000 * 25*/)
+
+    } else if (command === 'N' && challenging === true && message.author.username == challenger && ongoing === false) {
+        //console.log("N")
+        message.reply("alright then, maybe you should try picking another!")
+        challenger = ""
+        postChallenge = false
+        challenging = false
+        ongoing = false
+    }
+
+    if (postChallenge && challenging && challenger === message.author.username && challenging === true && command === "Y") {
+        message.reply("awesome! You earned 5 points for that!")
+        let scoreRef = database.ref("/Score/" + challenger)
+        scoreRef.once("value").then(snapshot => {
+            if (snapshot.val().Score === null) {
+                scoreRef.set({
+                    Score : 0
+                })
+            }
+
+            scoreRef.set({
+
+
+
+            Score : Number(snapshot.val().Score) + 5
+        })})
+        challenger = ""
+        postChallenge = false
+        challenging = false
+        ongoing = false
+    } else if (postChallenge && challenging && challenger === message.author.username && challenging === true && command === "N") {
+        message.reply("that's too bad, you lose 7 points for that....")
+        let scoreRef = database.ref("/Score/" + challenger)
+        scoreRef.once("value").then(snapshot => {
+            if (snapshot.val().Score === null) {
+                scoreRef.set({
+                    Score : 0
+                })
+            }
+
+            scoreRef.set({
+
+
+
+            Score : Number(snapshot.val().Score) - 7
+        })})
+        challenger = ""
+        postChallenge = false
+        challenging = false
+        ongoing = false
+    }
+
     if (!command.startsWith(prefix)) {
         return;
     }
@@ -222,10 +294,12 @@ client.on("message",  message => {
         }
     }*/
 
-    if (command === `${prefix}pickChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+    if (command === `${prefix}pickChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen")) && !challenging) {
         console.log("Pick Challenge Running")
+        //console.log(challenging);
 
         let challengeRef = database.ref("/Challenges")
+
 
         challengeRef.once("value").then(snapshot => {
             //console.log(snapshot.toJSON())
@@ -244,7 +318,10 @@ client.on("message",  message => {
                 let randomKey = storage[index[challengeChoice]].Challenge
                 console.log(challengeChoice)
                 console.log("Random Challenge Chosen by " + message.author.username)
-                message.reply("I think you should try......" + "\n" + "Challenge #" + (challengeChoice + 1) + " " + randomKey)
+                message.reply("I think you should try......" + "\n" + "Challenge #" + (challengeChoice + 1) + " " + randomKey + "\n" + "Do you accept? (Y/N)")
+                challenging = true;
+                challenger = message.author.username
+                //console.log(challenging);
                 return;
             } else {
 
@@ -257,7 +334,13 @@ client.on("message",  message => {
 
 
 
+    } else if (command === `${prefix}pickChallenge` && ((message.author.username === challenger)) && challenging) {
+        message.reply("finish your current challenge first!")
+    } else if ((command === `${prefix}pickChallenge` && !((message.author.username === challenger)) && challenging)) {
+        message.reply("you can't do that right now! " + challenger + " is currently finishing their challenge!")
     }
+
+
 
     if (command === `${prefix}removeAll` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log(message.author.username + " cleared the challenge list")
@@ -266,6 +349,37 @@ client.on("message",  message => {
         message.reply("I have emptied the current challenge set for you!")
         return;
     }
+
+    if (command === `${prefix}myScore` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+        let score = 0;
+        let scoreRef = database.ref("/Score/" + message.author.username)
+        scoreRef.once("value").then(snapshot => {
+            console.log(snapshot.val().Score)
+            if (snapshot.val().Score === null) {
+                scoreRef.set({
+                    Score : 0
+                })
+            }
+            score = snapshot.val().Score
+            message.reply("your score is " + score)})
+
+    }
+
+    if (command === `${prefix}help`) {
+        message.reply("here's what I can currently do!")
+
+        let embed = new Discord.RichEmbed().setColor("#FFC0CB")
+        embed.setDescription("Command List (Arguments Cannot Contain Spaces)")
+        embed.addField("!addChallenge <Challenge>", "Adds a challenge to the list")
+        embed.addField("!pickChallenge", "Will randomly select a challenge from the list for you to complete, 25 minutes given")
+        embed.addField("!myScore", "Will report the score that you have currently earned")
+        embed.addField("!removeChallenge <Challenge>", "If the challenge is in the list, it will be removed")
+        embed.addField("!removeAll", "Will remove all challenges from the list")
+        embed.addField("!showChallenges", "Will show all available challenges")
+
+        message.channel.send(embed)
+    }
+
 
     if (command === `${prefix}shutdown`) {
         message.reply('okay! See you soon!');
