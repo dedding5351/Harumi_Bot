@@ -68,7 +68,7 @@ client.on("message", async message => {
         message.channel.send(embed);
     }
 
-    if (command === `${prefix}addChallenge`) {// Change later
+    if (command === `${prefix}addChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {// Change later
         console.log("Add Challenge Running")
 
         let challengeRef = database.ref("/Challenges")
@@ -83,6 +83,7 @@ client.on("message", async message => {
             for (var i = 0; i < index.length; i++) {
                 if (storage[index[i]].Challenge == args[0]) {
                     message.reply("that's already in the Challenge set! Try something else!")
+                    console.log(message.author.username + " tried to add " + args[0] + " to the challenge list")
                     return;
                 }
             }
@@ -92,6 +93,7 @@ client.on("message", async message => {
                 [keyString] : args[0]
             })
             message.reply(`okay I've added ${args[0]} to the challenge set!`)
+            console.log(message.author.username + " added " + args[0] + " to the challenge list")
 
         })
 
@@ -122,7 +124,7 @@ client.on("message", async message => {
             [keyString] : "SET"
         });*/
 
-    if (command === `${prefix}showChallenges`) {
+    if (command === `${prefix}showChallenges` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log("Show Challenges Running")
 
         let challengeRef = database.ref("/Challenges")
@@ -147,11 +149,13 @@ client.on("message", async message => {
 
                     message.reply("alright! Here is a list of the current challenges, did I miss any?")
                     message.channel.send(embed);
+                    console.log(message.author.username + " viewed the challenge list")
                 })
 
 
             } else {
                 message.reply("there aren't any at the moment! How about you add some?")
+                console.log(message.author.username + " tried to view the challenge list")
             }
 
         })
@@ -159,7 +163,7 @@ client.on("message", async message => {
 
     }
 
-    if (command === `${prefix}removeChallenge`) {
+    if (command === `${prefix}removeChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log("Remove Challenge Running")
 
         let challengeRef = database.ref("/Challenges")
@@ -175,12 +179,14 @@ client.on("message", async message => {
                 if (storage[index[i]].Challenge == args[0]) {
                     message.reply(`alright, I have removed "${args[0]}" from the Challenge set!`)
                     challengeRef.child(index[i]).remove()
+                    console.log(message.author.username + " removed " + args[0])
                     return;
                 }
 
             }
 
             message.reply(`I couldn't find "${args[0]}" in the Challenge set.`)
+            console.log(message.author.username + " tried to remove " + args[0])
             return;
 
         })
@@ -215,6 +221,43 @@ client.on("message", async message => {
             message.reply(`you need to join a voice channel first!`);
         }
     }*/
+
+    if (command === `${prefix}pickChallenge`) {
+        console.log("Pick Challenge Running")
+
+        let challengeRef = database.ref("/Challenges")
+
+        challengeRef.once("value").then(snapshot => {
+            //console.log(snapshot.toJSON())
+            let storage = snapshot.toJSON()
+            var index = []
+            for (var x in storage) {
+                index.push(x)
+            }
+
+            if (index.length > 0) {
+
+                let min = Math.ceil(0);
+                let max = Math.floor(index.length);
+                let challengeChoice = Math.floor(Math.random() * (max - min + 1)) + min
+
+                let randomKey = storage[index[challengeChoice]].Challenge
+                console.log(challengeChoice)
+                console.log("Random Challenge Chosen by " + message.author.username)
+                message.reply("I think you should try......" + "\n" + "Challenge #" + (challengeChoice + 1) + " " + randomKey)
+                return;
+            } else {
+
+                message.reply("the challenge list is empty! Try adding some challenges!")
+            }
+
+
+
+        })
+
+
+
+    }
 
     if (command === `${prefix}shutdown`) {
         message.reply('okay! See you soon!');
