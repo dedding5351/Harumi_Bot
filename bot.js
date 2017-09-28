@@ -28,7 +28,7 @@ client.on("ready", () => {
 });
 
 
-client.on("message", async message => {
+client.on("message",  message => {
     if(message.author.bot) {
         return;
     }
@@ -222,7 +222,7 @@ client.on("message", async message => {
         }
     }*/
 
-    if (command === `${prefix}pickChallenge`) {
+    if (command === `${prefix}pickChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log("Pick Challenge Running")
 
         let challengeRef = database.ref("/Challenges")
@@ -257,6 +257,14 @@ client.on("message", async message => {
 
 
 
+    }
+
+    if (command === `${prefix}removeAll` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+        console.log(message.author.username + " cleared the challenge list")
+        let challengeRef = database.ref("/Challenges");
+        challengeRef.remove();
+        message.reply("I have emptied the current challenge set for you!")
+        return;
     }
 
     if (command === `${prefix}shutdown`) {
