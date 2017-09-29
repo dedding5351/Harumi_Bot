@@ -1,7 +1,7 @@
 {
   "name": "harumi_bot",
-  "version": "0.0.1",
-  "description": "Harumi Bot!",
+  "version": "1.0.0",
+  "description": "A bot for personal motivation/challenging yourself to be better!",
   "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
