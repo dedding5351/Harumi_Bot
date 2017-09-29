@@ -167,7 +167,7 @@ client.on("message",  message => {
     if (command === `${prefix}addChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {// Change later
         console.log("Add Challenge Running")
 
-        let challengeRef = database.ref("/Challenges")
+        let challengeRef = database.ref("/Challenges/" + message.author.username)
 
         challengeRef.once("value").then(snapshot => {
             //console.log(snapshot.toJSON())
@@ -184,7 +184,7 @@ client.on("message",  message => {
                 }
             }
             let keyString = "Challenge"
-            let challengeRef = database.ref("/Challenges").push()
+            let challengeRef = database.ref("/Challenges/" + message.author.username).push()
             challengeRef.set({
                 [keyString] : args[0]
             })
@@ -223,9 +223,9 @@ client.on("message",  message => {
     if (command === `${prefix}showChallenges` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log("Show Challenges Running")
 
-        let challengeRef = database.ref("/Challenges")
+        let challengeRef = database.ref("/Challenges/" + message.author.username)
 
-        database.ref("/Challenges").once("value").then(snapshot => {
+        database.ref("/Challenges/" + message.author.username).once("value").then(snapshot => {
             if (snapshot.numChildren() > 0) {
                 let stringBuild = ""
                 challengeRef.once("value").then(snapshot => {
@@ -262,7 +262,7 @@ client.on("message",  message => {
     if (command === `${prefix}removeChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log("Remove Challenge Running")
 
-        let challengeRef = database.ref("/Challenges")
+        let challengeRef = database.ref("/Challenges/" + message.author.username)
 
         challengeRef.once("value").then(snapshot => {
             //console.log(snapshot.toJSON())
@@ -322,7 +322,7 @@ client.on("message",  message => {
         console.log("Pick Challenge Running")
         //console.log(challenging);
 
-        let challengeRef = database.ref("/Challenges")
+        let challengeRef = database.ref("/Challenges/" + message.author.username)
 
 
         challengeRef.once("value").then(snapshot => {
@@ -369,7 +369,7 @@ client.on("message",  message => {
 
     if (command === `${prefix}removeAll` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         console.log(message.author.username + " cleared the challenge list")
-        let challengeRef = database.ref("/Challenges");
+        let challengeRef = database.ref("/Challenges/" + message.author.username);
         challengeRef.remove();
         message.reply("I have emptied the current challenge set for you!")
         return;
