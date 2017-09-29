@@ -1,4 +1,9 @@
 {
-    "token": "MzYxNTg1NzgzNzcwOTcyMTYw.DK1Tcg.OFYdFgxenfdrJk620JP3W48CurE",
-    "prefix": "!"
+    "token": "###",
+    "prefix": "!",
+    "apiKey" : "###",
+    "authDomain" : "###",
+    "databaseURL" : "###",
+    "storageBucket" : "###",
+    "messagingSenderId" : "###"
 }

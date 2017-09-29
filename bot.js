@@ -13,11 +13,11 @@ const client = new Discord.Client();
 // Retrieve your own options values by adding a web app on
 // https://console.firebase.google.com
 Firebase.initializeApp({
-  apiKey: "AIzaSyCsKtXg4yM-ADai9t4jHCcIdLowFaMnoJE",                             // Auth / General Use
-  authDomain: "eve-challenger.firebaseapp.com",         // Auth with popup/redirect
-  databaseURL: "https://eve-challenger.firebaseio.com", // Realtime Database
-  storageBucket: "eve-challenger.appspot.com",          // Storage
-  messagingSenderId: "430517639152"                  // Cloud Messaging
+  apiKey: botSettings.apiKey,
+  authDomain: botSettings.authDomain,
+  databaseURL: botSettings.databaseURL,
+  storageBucket: botSettings.storageBucket,
+  messagingSenderId: botSettings.messagingSenderId
 });
 
 //Settings States && Logic
@@ -60,11 +60,26 @@ client.on("message",  message => {
     console.log(args);
     */
 
-    console.log(message.content)
+    //console.log(message.content)
 
     if (command === "Y" && challenging === true && message.author.username === challenger && ongoing === false) {
         //console.log("Y")
-        message.reply("okay you have 25 minutes..... Go!")
+        message.reply("okay you have 30 minutes..... Go!")
+        let acceptRef = database.ref("/Score/" + challenger + "/Accepted")
+        //console.log(acceptRef);
+        acceptRef.once("value").then(snapshot => {
+            //console.log(snapshot.val())
+            if (snapshot.val() === null) {
+                acceptRef.set({
+                    Accepted : 1
+                })
+            } else {
+                acceptRef.set({
+                    Accepted : Number(snapshot.val().Accepted) + 1
+                })
+            }
+
+            })
         ongoing = true;
         setTimeout( () => {
             message.reply("time is up! Did you finish? (Y/N)")
@@ -72,11 +87,24 @@ client.on("message",  message => {
 
 
 
-        }, 5000/*60000 * 25*/)
+        }, 60000 * 30 )// 30 minutes)
 
     } else if (command === 'N' && challenging === true && message.author.username == challenger && ongoing === false) {
         //console.log("N")
         message.reply("alright then, maybe you should try picking another!")
+        let denyRef = database.ref("/Score/" + challenger + "/Denied")
+        denyRef.once("value").then(snapshot => {
+            if (snapshot.val() === null) {
+                denyRef.set({
+                    Denied : 1
+                })
+            } else {
+                denyRef.set({
+                    Denied : Number(snapshot.val().Denied) + 1
+                })
+            }
+
+            })
         challenger = ""
         postChallenge = false
         challenging = false
@@ -84,41 +112,37 @@ client.on("message",  message => {
     }
 
     if (postChallenge && challenging && challenger === message.author.username && challenging === true && command === "Y") {
-        message.reply("awesome! You earned 5 points for that!")
-        let scoreRef = database.ref("/Score/" + challenger)
-        scoreRef.once("value").then(snapshot => {
-            if (snapshot.val().Score === null) {
-                scoreRef.set({
-                    Score : 0
+        message.reply("awesome! I knew you could do it!")
+        let successRef = database.ref("/Score/" + challenger + "/Success")
+        successRef.once("value").then(snapshot => {
+            if (snapshot.val() === null) {
+                successRef.set({
+                    Success : 1
+                })
+            } else {
+                successRef.set({
+                    Success : Number(snapshot.val().Success) + 1
                 })
             }
 
-            scoreRef.set({
-
-
-
-            Score : Number(snapshot.val().Score) + 5
-        })})
+            })
         challenger = ""
         postChallenge = false
         challenging = false
         ongoing = false
     } else if (postChallenge && challenging && challenger === message.author.username && challenging === true && command === "N") {
-        message.reply("that's too bad, you lose 7 points for that....")
-        let scoreRef = database.ref("/Score/" + challenger)
-        scoreRef.once("value").then(snapshot => {
-            if (snapshot.val().Score === null) {
-                scoreRef.set({
-                    Score : 0
+        message.reply("that's too bad... You'll do better next time!")
+        let failRef = database.ref("/Score/" + challenger +"/Failed")
+        failRef.once("value").then(snapshot => {
+            if (snapshot.val() === null) {
+                failRef.set({
+                    Failed : 1
                 })
-            }
-
-            scoreRef.set({
-
-
-
-            Score : Number(snapshot.val().Score) - 7
-        })})
+            } else {
+                failRef.set({
+                    Failed : Number(snapshot.val().Failed) + 1
+                })
+            }})
         challenger = ""
         postChallenge = false
         challenging = false
@@ -312,11 +336,12 @@ client.on("message",  message => {
             if (index.length > 0) {
 
                 let min = Math.ceil(0);
-                let max = Math.floor(index.length);
+                let max = Math.floor(index.length - 1);
                 let challengeChoice = Math.floor(Math.random() * (max - min + 1)) + min
-
+                //console.log(challengeChoice)
+                //console.log(challengeChoice)
                 let randomKey = storage[index[challengeChoice]].Challenge
-                console.log(challengeChoice)
+
                 console.log("Random Challenge Chosen by " + message.author.username)
                 message.reply("I think you should try......" + "\n" + "Challenge #" + (challengeChoice + 1) + " " + randomKey + "\n" + "Do you accept? (Y/N)")
                 challenging = true;
@@ -352,16 +377,65 @@ client.on("message",  message => {
 
     if (command === `${prefix}myScore` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
         let score = 0;
-        let scoreRef = database.ref("/Score/" + message.author.username)
-        scoreRef.once("value").then(snapshot => {
-            console.log(snapshot.val().Score)
-            if (snapshot.val().Score === null) {
-                scoreRef.set({
-                    Score : 0
+        let embed = new Discord.RichEmbed().setColor("#FFC0CB")
+        embed.setDescription("Challenge Statistics for " + message.author.username)
+
+        let successRef = database.ref("/Score/" + message.author.username + "/Success")
+        successRef.once("value").then(snapshot => {
+            //console.log(snapshot.val().Score)
+            if (snapshot.val() === null) {
+                successRef.set({
+                    Success : 0
                 })
+                embed.addField("Success", 0)
+            } else {
+                embed.addField("Success", snapshot.val().Success)
             }
-            score = snapshot.val().Score
-            message.reply("your score is " + score)})
+        })
+
+        let failRef = database.ref("/Score/" + message.author.username + "/Failed")
+        failRef.once("value").then(snapshot => {
+            //console.log(snapshot.val().Score)
+            if (snapshot.val() === null) {
+                failRef.set({
+                    Failed : 0
+                })
+                embed.addField("Failed", 0)
+            } else {
+                embed.addField("Failed", snapshot.val().Failed)
+            }
+        })
+
+        let acceptRef = database.ref("/Score/" + message.author.username + "/Accepted")
+        acceptRef.once("value").then(snapshot => {
+            //console.log(snapshot.val().Score)
+            if (snapshot.val() === null) {
+                acceptRef.set({
+                    Accepted : 0
+                })
+                embed.addField("Accepted", 0)
+            } else {
+                embed.addField("Accepted", snapshot.val().Accepted)
+            }
+        })
+
+        let denyRef = database.ref("/Score/" + message.author.username + "/Denied")
+        denyRef.once("value").then(snapshot => {
+            //console.log(snapshot.val().Score)
+            if (snapshot.val() === null) {
+                denyRef.set({
+                    Denied : 0
+                })
+                embed.addField("Denied", 0)
+            } else {
+                    embed.addField("Denied", snapshot.val().Denied)
+            }
+        })
+
+
+
+        message.reply("here are your stats!")
+        message.channel.send(embed)
 
     }
 
