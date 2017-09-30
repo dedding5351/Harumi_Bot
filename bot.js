@@ -47,6 +47,7 @@ client.on("message",  message => {
     });*/
 
     if (message.channel.type === "dm") { // === is strict equals NO TYPE CONVERSION
+        return message.channel.send("You must be a bit lonely ^^;; \n" + "    - <3 Harumi")
         return message.channel.send("Don't DM me! \n" + "   - <3 Harumi");
     }
 
@@ -164,7 +165,7 @@ client.on("message",  message => {
         message.channel.send(embed);
     }
 
-    if (command === `${prefix}addChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {// Change later
+    if (command === `${prefix}addChallenge`) {// Change later
         console.log("Add Challenge Running")
 
         let challengeRef = database.ref("/Challenges/" + message.author.username)
@@ -192,6 +193,132 @@ client.on("message",  message => {
             console.log(message.author.username + " added " + args[0] + " to the challenge list")
 
         })
+    }
+        console.log(command)
+        if (command === `${prefix}addIdea`) {
+            let ideaRef = database.ref("/Ideas/" + message.author.username)
+            console.log("Working")
+            ideaRef.once("value").then(snapshot => {
+                let storage = snapshot.toJSON()
+                var index = []
+                for (var x in storage) {
+                    index.push(x)
+                }
+                for (var i = 0; i < index.length; i++) {
+                    if (storage[index[i]].Idea === args[0]) {
+                        message.reply("that's already in the Idea set! Try something else!")
+                        console.log(message.author.username + " tried to add " + args[0] + " to their idea list")
+                        return;
+                    }
+                }
+                let keyString = "Idea"
+                let ideaRef = database.ref("/Ideas/" + message.author.username).push()
+                ideaRef.set({
+                    Idea : args[0]
+                })
+                message.reply(`okay I've added ${args[0]} to your idea set!`)
+                console.log(message.author.username + " added " + args[0] + " to their idea list")
+            })
+        }
+
+        if (command === `${prefix}removeIdea`) {
+
+            let ideaRef = database.ref("/Ideas/" + message.author.username)
+            ideaRef.once("value").then(snapshot => {
+                let storage = snapshot.toJSON()
+                var index = []
+                for (var x in storage) {
+                    index.push(x)
+                }
+
+                for (var x = 0; x < index.length; x++) {
+                    if (storage[index[x]].Idea == args[0]) {
+                        message.reply("alright! I've removed that idea from your idea list!")
+                        console.log(message.author.username + " removed " + args[0] + " from their idea list")
+                        ideaRef.child(index[x]).remove()
+                        return;
+                    }
+                }
+                message.reply(" I couldn't find " +  args[0] + " in your idea list! So don't worry about it!")
+            })
+        }
+
+        if (command === `${prefix}showIdeas`) {
+            let ideaRef = database.ref("/Ideas/" + message.author.username)
+
+
+            database.ref("/Ideas/" + message.author.username).once("value").then(snapshot => {
+            if (snapshot.numChildren() > 0) {
+                let stringBuild = ""
+                ideaRef.once("value").then(snapshot => {
+                    //console.log(snapshot.toJSON())
+                    let storage = snapshot.toJSON()
+                    var index = []
+                    for (var x in storage) {
+                        index.push(x)
+                    }
+
+                    let embed = new Discord.RichEmbed().setColor("#FFC0CB").setDescription("Current Idea List:")
+
+                    for (var i = 0; i < index.length; i++) {
+                        let ideaIdentifier = "Idea #" + (i + 1)
+                        embed.addField(ideaIdentifier, storage[index[i]].Idea)
+                    }
+
+                    message.reply("alright! Here is a list of the current ideas, did I miss any?")
+                    message.channel.send(embed);
+                    console.log(message.author.username + " viewed the ideea list")
+                })
+
+
+            } else {
+                message.reply("there aren't any at the moment! How about you add some?")
+                console.log(message.author.username + " tried to view the idea list")
+            }
+
+        })
+        }
+
+    if (command === `${prefix}pickIdea`) {
+        console.log("Pick Challenge Running")
+        //console.log(challenging);
+
+        let ideaRef = database.ref("/Ideas/" + message.author.username)
+
+
+        ideaRef.once("value").then(snapshot => {
+            //console.log(snapshot.toJSON())
+            let storage = snapshot.toJSON()
+            var index = []
+            for (var x in storage) {
+                index.push(x)
+            }
+
+            if (index.length > 0) {
+
+                let min = Math.ceil(0);
+                let max = Math.floor(index.length - 1);
+                let ideaChoice = Math.floor(Math.random() * (max - min + 1)) + min
+                //console.log(challengeChoice)
+                //console.log(challengeChoice)
+                let randomKey = storage[index[ideaChoice]].Idea
+
+                console.log("Random Idea Chosen by " + message.author.username)
+                message.reply("I think you should try......" + "\n" + "Idea #" + (ideaChoice + 1) + " " + randomKey)
+                //console.log(challenging);
+                return;
+            } else {
+
+                message.reply("the idea list is empty! Try adding some ideas!")
+            }
+
+
+
+        })
+
+
+
+    }
 
        /* database.ref("/Challenges").once("value").then(snapshot => {
             let keyString = "Challenge"
@@ -211,7 +338,7 @@ client.on("message",  message => {
             //}
             //console.log(storage[index[0]].Challenge)
             //console.log(obj[index[1]].Challenge) PERFECT
-    }
+
 
 
 
@@ -220,7 +347,7 @@ client.on("message",  message => {
             [keyString] : "SET"
         });*/
 
-    if (command === `${prefix}showChallenges` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+    if (command === `${prefix}showChallenges`) {
         console.log("Show Challenges Running")
 
         let challengeRef = database.ref("/Challenges/" + message.author.username)
@@ -259,7 +386,7 @@ client.on("message",  message => {
 
     }
 
-    if (command === `${prefix}removeChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+    if (command === `${prefix}removeChallenge`) {
         console.log("Remove Challenge Running")
 
         let challengeRef = database.ref("/Challenges/" + message.author.username)
@@ -318,7 +445,7 @@ client.on("message",  message => {
         }
     }*/
 
-    if (command === `${prefix}pickChallenge` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen")) && !challenging) {
+    if (command === `${prefix}pickChallenge` &&  !challenging) {
         console.log("Pick Challenge Running")
         //console.log(challenging);
 
@@ -367,7 +494,7 @@ client.on("message",  message => {
 
 
 
-    if (command === `${prefix}removeAll` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+    if (command === `${prefix}removeAllChallenges`) {
         console.log(message.author.username + " cleared the challenge list")
         let challengeRef = database.ref("/Challenges/" + message.author.username);
         challengeRef.remove();
@@ -375,7 +502,15 @@ client.on("message",  message => {
         return;
     }
 
-    if (command === `${prefix}myScore` && ((message.author.username === "Tenchi") || (message.author.username === "Sekai_no_Kamen"))) {
+    if (command === `${prefix}removeAllIdeas`) {
+        console.log(message.author.username + " cleared the idea list")
+        let ideaRef = database.ref("/Ideas/" + message.author.username);
+        ideaRef.remove();
+        message.reply("I have emptied the current idea set for you!")
+        return;
+    }
+
+    if (command === `${prefix}myScore`) {
         let score = 0;
         let embed = new Discord.RichEmbed().setColor("#FFC0CB")
         embed.setDescription("Challenge Statistics for " + message.author.username)
@@ -445,11 +580,16 @@ client.on("message",  message => {
         let embed = new Discord.RichEmbed().setColor("#FFC0CB")
         embed.setDescription("Command List (Arguments Cannot Contain Spaces)")
         embed.addField("!addChallenge <Challenge>", "Adds a challenge to the list")
-        embed.addField("!pickChallenge", "Will randomly select a challenge from the list for you to complete, 25 minutes given")
+        embed.addField("!addIdea <Idea>", "Adds an idea to the list")
+        embed.addField("!pickChallenge", "Will randomly select a challenge from the list for you to complete, 30 minutes given")
+        embed.addField("!pickIdea", "Will randomly select an idea from the list for you to work on")
         embed.addField("!myScore", "Will report the score that you have currently earned")
         embed.addField("!removeChallenge <Challenge>", "If the challenge is in the list, it will be removed")
-        embed.addField("!removeAll", "Will remove all challenges from the list")
+        embed.addField("!removeIdea <Idea>", "If the idea is in the list, it will be remove")
+        embed.addField("!removeAllChallenges", "Will remove all challenges from the list")
+        embed.addField("!removeAllIdeas", "Will remove all ideas from the list")
         embed.addField("!showChallenges", "Will show all available challenges")
+        embed.addField("!showIdeas", "Will show all available ideas")
 
         message.channel.send(embed)
     }
@@ -471,7 +611,8 @@ client.login(botSettings.token)
 
 
 
-
+//Made With Love  <3
+//      - Atlanta, Georgia
 
 
 
