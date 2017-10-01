@@ -5,3 +5,4 @@ Can be used to track challenges/ideas as well as hold users accountable for the 
 
 
 //Made With Love <3
+//    From Atlanta, Georgia
