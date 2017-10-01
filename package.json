@@ -9,7 +9,10 @@
   "author": "Dennis Eddington",
   "license": "ISC",
   "dependencies": {
+    "cheero": "0.0.1",
     "discord.js": "^11.2.1",
-    "firebase": "^4.4.0"
+    "firebase": "^4.4.0",
+    "request": "^2.83.0",
+    "xmlhttprequest": "^1.8.0"
   }
 }

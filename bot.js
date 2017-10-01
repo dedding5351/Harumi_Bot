@@ -4,6 +4,9 @@ const Discord = require("discord.js");
 const Firebase = require("firebase");
 //const Music = require("discord.js-music");
 const prefix = botSettings.prefix;
+const request = require('request')
+const cheerio = require('cheerio')
+
 
 
 //Creating a ready event
@@ -27,9 +30,69 @@ let challenger = "";
 let ongoing = false;
 let postChallenge = false;
 
+
+let streamToWatch = "sekai_no_kamen"
+let client_id = botSettings.client_id
+let channelStatus = false;
+
+
+
+var url = "https://api.twitch.tv/kraken/streams/" + streamToWatch + "?client_id=" + client_id
+    request(url, function(err, resp, body) {
+        var data = JSON.parse(body);
+        if (data["stream"] == null) {
+            //console.log("Offline")
+        } else {
+            //console.log("Online")
+
+        }
+
+})
+
+
+function channelStatusCheck(){
+
+    var url = "https://api.twitch.tv/kraken/streams/" + streamToWatch + "?client_id=" + client_id
+    request(url, function(err, resp, body) {
+
+        var data = JSON.parse(body);
+        let previousChannelStatus = channelStatus
+        if (data["stream"] == null) {
+            console.log("Offline")
+            channelStatus = false;
+        } else {
+            console.log("Online")
+            channelStatus = true
+
+        }
+        if (channelStatus & !previousChannelStatus) {
+            client.channels.get('361613510997704705').send('@everyone Sekai_no_Kamen has just gone live @ https://www.twitch.tv/sekai_no_kamen ! Come watch <3!')
+        }
+
+    })
+
+
+
+    reCheck();
+}
+
+function reCheck(){
+    setInterval(function(){
+        channelStatusCheck()
+    }, ((1000 * 60) * 2) );
+}
+
+reCheck();
+
+
+
+
+
 // => short way of writing function(args)
 client.on("ready", () => {
     console.log('Bot is ready!' + " " + client.user.username + " is online!")
+
+
 });
 
 
@@ -45,7 +108,6 @@ client.on("message",  message => {
     defaultDatabase.ref("/chatLog").set({
         author : message.content
     });*/
-
     if (message.channel.type === "dm") { // === is strict equals NO TYPE CONVERSION
         return message.channel.send("You must be a bit lonely ^^;; \n" + "    - <3 Harumi")
         return message.channel.send("Don't DM me! \n" + "   - <3 Harumi");
@@ -56,6 +118,7 @@ client.on("message",  message => {
     //console.log(command)
     let args = messageArray.slice(1); // Array of elements when cutting out one
     /*
+
     console.log(messageArray);
     console.log(command);
     console.log(args);
@@ -163,6 +226,7 @@ client.on("message",  message => {
             .addField("True ID", message.author.id);
 
         message.channel.send(embed);
+
     }
 
     if (command === `${prefix}addChallenge`) {// Change later
