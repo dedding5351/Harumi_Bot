@@ -1,11 +1,11 @@
 
 {
-    "token": "###",
+    "token": "MzYxNTg1NzgzNzcwOTcyMTYw.DK1Tcg.OFYdFgxenfdrJk620JP3W48CurE",
     "prefix": "!",
-    "apiKey" : "###",
-    "authDomain" : "###",
-    "databaseURL" : "###",
-    "storageBucket" : "###",
-    "messagingSenderId" : "###",
-    "twitchClientId" : "###"
+    "apiKey" : "AIzaSyCsKtXg4yM-ADai9t4jHCcIdLowFaMnoJE",
+    "authDomain" : "eve-challenger.firebaseapp.com",
+    "databaseURL" : "https://eve-challenger.firebaseio.com",
+    "storageBucket" : "eve-challenger.appspot.com",
+    "messagingSenderId" : "430517639152",
+    "twitchClientId" : "'2e46e5i20czk5lmfhjj6u3kz5h4tzy'"
 }
